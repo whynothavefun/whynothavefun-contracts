@@ -2,7 +2,6 @@
 
 [profile.default]
   auto_detect_solc = false
-  block_timestamp = 1_738_368_000 # Feb 1, 2025 at 00:00 GMT
   bytecode_hash = "none"
   evm_version = "shanghai"
   fuzz = { runs = 1_000 }
@@ -11,9 +10,18 @@
   optimizer_runs = 10_000
   out = "out"
   script = "script"
-  solc = "0.8.29"
+  solc = "0.8.30"
   src = "src"
   test = "tests"
+  via_ir = true
+  
+  extra_output = ["storageLayout"]
+  extra_output_files = ["storageLayout"]
+  fs_permissions = [{ access = "read-write", path = "./" }]
+  remappings = [
+    "solady/=lib/solady/",
+    "forge-std/=lib/forge-std/src/",
+  ]
 
 [profile.ci]
   fuzz = { runs = 10_000 }
@@ -45,3 +53,5 @@
   sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
   hyper_evm_testnet = ""
   hyper_evm = ""
+
+
