@@ -19,8 +19,8 @@
   extra_output_files = ["storageLayout"]
   fs_permissions = [{ access = "read-write", path = "./" }]
   remappings = [
-    "solady/=lib/solady/",
-    "forge-std/=lib/forge-std/src/",
+    "solady/=node_modules/solady/src/",
+    "forge-std/=node_modules/forge-std/src/",
   ]
 
 [profile.ci]
@@ -29,6 +29,7 @@
 
 [etherscan]
   mainnet = { key = "${API_KEY_ETHERSCAN}" }
+  hyper_evm_testnet = { key = "${API_KEY_ETHERSCAN}" }
 
 [fmt]
   bracket_spacing = true
@@ -51,7 +52,7 @@
   optimism = "https://optimism-rpc.publicnode.com"
   polygon = "https://polygon-bor-rpc.publicnode.com"
   sepolia = "https://ethereum-sepolia-rpc.publicnode.com"
-  hyper_evm_testnet = ""
+  hyper_evm_testnet = "https://rpc.hyperliquid-testnet.xyz/evm"
   hyper_evm = ""
 
 
