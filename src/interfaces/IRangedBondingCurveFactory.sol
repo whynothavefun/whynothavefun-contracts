@@ -60,6 +60,8 @@ interface IRangedBondingCurveFactory {
 
     event TokenInfo(address indexed token, string name, string symbol, uint256 maxSupply);
 
+    event DeploymentFeeSet(uint256 fee);
+
     // Functions
     //@dev returns the address of the curve for a given token
     //@param _token the address of the token
@@ -87,6 +89,8 @@ interface IRangedBondingCurveFactory {
     function initialize(CurveParams memory params) external;
 
     function setCurveParams(CurveParams memory params) external;
+
+    function setDeploymentFee(uint256 fee) external;
 
     function deployCurve(DeploymentParams memory params) external returns (address curve, uint256 initialBuyAmount);
 }

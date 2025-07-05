@@ -38,6 +38,9 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, Initiali
 
     CurveParams public curveParams;
 
+    //@dev Deployment fee amount
+    uint256 public deploymentFee;
+
     constructor(address owner) {
         _initializeOwner(owner);
     }
@@ -64,6 +67,15 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, Initiali
     }
 
     /**
+     * @dev Sets the deployment fee, only callable by the owner
+     * @param fee The deployment fee amount
+     */
+    function setDeploymentFee(uint256 fee) external onlyOwner {
+        deploymentFee = fee;
+        emit DeploymentFeeSet(fee);
+    }
+
+    /**
      * @dev Deploys a curve without salt
      * @param params The parameters for the curve deployment
      * @return curve The address of the deployed curve
@@ -74,6 +86,12 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, Initiali
         nonReentrant
         returns (address curve, uint256 initialBuyAmount)
     {
+        // Collect deployment fee
+        if (deploymentFee > 0) {
+            curveParams.nativeToken.safeTransferFrom(msg.sender, curveParams.feeCollector, deploymentFee);
+            IFeeCollector(curveParams.feeCollector).onERC20Received(curveParams.nativeToken, deploymentFee);
+        }
+        
         return _deployCurveWithInitialBuy(params);
     }
 
