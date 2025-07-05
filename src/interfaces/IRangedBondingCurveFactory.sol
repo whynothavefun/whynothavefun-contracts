@@ -13,7 +13,6 @@ interface IRangedBondingCurveFactory {
     error TokenSupplyAtBoundaryNotGreaterThanNext(uint256 current, uint256 next);
     error NativeAmountAtBoundaryNotLessThanNext(uint256 current, uint256 next);
     error CurveAlreadyExistsForToken(address bondedToken);
-    error NoDeploymentPermission(address account, uint256 round);
     error TickerAlreadyUsed(string ticker);
     error InitialBuyAmountExceedsMaxInitialBuyAmount(uint256 initialBuyAmount, uint256 maxInitialBuyAmount);
     error InvalidAutoAbsorbAddress();
@@ -61,10 +60,6 @@ interface IRangedBondingCurveFactory {
 
     event TokenInfo(address indexed token, string name, string symbol, uint256 maxSupply);
 
-    event CurveLauncherRoleGranted(address indexed account);
-
-    event CurveLauncherRoleRevoked(address indexed account);
-
     // Functions
     //@dev returns the address of the curve for a given token
     //@param _token the address of the token
@@ -86,25 +81,10 @@ interface IRangedBondingCurveFactory {
     function getDeployedCurveAtIndex(uint256 _index) external view returns (address);
 
     /**
-     * @dev Grants the curve launcher role to an account
-     * @param account The account to grant the role to
-     * @param round The round to grant the role to
-     */
-    function grantCurveLauncherRole(address account, uint256 round) external;
-
-    /**
-     * @dev Revokes the curve launcher role from an account
-     * @param account The account to revoke the role from
-     * @param round The round to revoke the role from
-     */
-    function revokeCurveLauncherRole(address account, uint256 round) external;
-
-    /**
      * @dev Initializes the factory
-     * @param auction The address of the auction
      * @param params The parameters for the factory
      */
-    function initialize(address auction, CurveParams memory params) external;
+    function initialize(CurveParams memory params) external;
 
     function setCurveParams(CurveParams memory params) external;
 

@@ -6,7 +6,6 @@ import "./interfaces/IRangedBondingCurve.sol";
 
 import "./libraries/RangeMath.sol";
 
-import "solady/auth/OwnableRoles.sol";
 import "solady/utils/SafeTransferLib.sol";
 import "solady/utils/ReentrancyGuard.sol";
 import "solady/utils/Initializable.sol";
@@ -19,11 +18,8 @@ import "./Base.sol";
  * @title RangedBondingCurveFactory
  * @dev Factory contract for deploying RangedBondingCurve instances with predefined configurations using CREATE2
  */
-contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableRoles, Initializable, ReentrancyGuard {
+contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, Initializable, ReentrancyGuard {
     using SafeTransferLib for address;
-    // Role constants
-
-    uint256 public constant AUCTION_ROLE = 2;
 
     //@dev Array of all deployed curves
     address[] public deployedCurves;
@@ -42,20 +38,12 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableR
 
     CurveParams public curveParams;
 
-    mapping(address => mapping(uint256 => bool)) public hasDeploymentPermissionForRound;
-
     constructor(address owner) {
         _initializeOwner(owner);
     }
 
-    function initialize(address auction, CurveParams memory params) external onlyOwner initializer {
+    function initialize(CurveParams memory params) external onlyOwner initializer {
         _validateRanges(params.ranges);
-
-        _grantRoles(auction, AUCTION_ROLE);
-
-        // grant the owners permission to deploy the first token
-        hasDeploymentPermissionForRound[owner()][0] = true;
-
         curveParams = params;
     }
 
@@ -73,25 +61,6 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableR
         require(params.nativeToken != address(0), InvalidNativeTokenAddress());
         _validateRanges(params.ranges);
         curveParams = params;
-    }
-
-    /**
-     * @dev Grants the curve launcher role to an account for a given round
-     * @param account The account to grant the role to
-     */
-    function grantCurveLauncherRole(address account, uint256 round) external onlyRoles(AUCTION_ROLE) {
-        hasDeploymentPermissionForRound[account][round] = true;
-        emit CurveLauncherRoleGranted(account);
-    }
-
-    /**
-     * @dev Revokes the curve launcher role from an account for a given round
-     * @param account The account to revoke the role from
-     * @param round The round to revoke the role for
-     */
-    function revokeCurveLauncherRole(address account, uint256 round) external onlyOwner {
-        hasDeploymentPermissionForRound[account][round] = false;
-        emit CurveLauncherRoleRevoked(account);
     }
 
     /**
@@ -139,7 +108,6 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableR
         CurveParams memory params
     ) internal returns (address) {
         require(!isTickerUsed[symbol], TickerAlreadyUsed(symbol));
-        require(hasDeploymentPermissionForRound[msg.sender][round], NoDeploymentPermission(msg.sender, round));
 
         address deployer = address(this);
         address bondedToken = _deployBondedToken(name, symbol, salt, deployer);
@@ -160,7 +128,7 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableR
         );
 
         _initializeContracts(bondedToken, curve);
-        _updateFactoryState(curve, bondedToken, symbol, round);
+        _updateFactoryState(curve, bondedToken, symbol);
 
         emit CurveDeployed(
             curve,
@@ -220,13 +188,12 @@ contract RangedBondingCurveFactory is IRangedBondingCurveFactory, Base, OwnableR
         BondedToken(payable(bondedToken)).transferOwnership(owner());
     }
 
-    function _updateFactoryState(address curve, address bondedToken, string memory symbol, uint256 round) internal {
+    function _updateFactoryState(address curve, address bondedToken, string memory symbol) internal {
         deployedCurves.push(curve);
         isDeployedCurve[curve] = true;
         tokenToCurve[bondedToken] = curve;
         curveLaunchers.push(msg.sender);
         isTickerUsed[symbol] = true;
-        hasDeploymentPermissionForRound[msg.sender][round] = false;
     }
 
     /**
