@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+When updates to the contracts are requested, do not touch the contracts isnide of src/wnh_contracts directory
